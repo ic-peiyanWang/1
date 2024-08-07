@@ -1,0 +1,39 @@
+#!/bin/bash
+
+function usage() {
+    echo -e "此脚本用于生成x86的release版本，使用前请初始化source mazu_dev/env_setup.sh x86_64" 
+    echo -e '\t-h, help'
+}
+
+function make_release() {
+    if [[ -z $NIO_INSTALL_PREFIX ]]; then
+        usage
+        echo -e 'NIO_INSTALL_PREIFX not set, exit...'   
+        exit 1
+    fi
+    if [[ -z $PNC_SYSROOT ]]; then
+        usage
+        echo -e 'PNC_SYSROOT not set, exit...'
+        exit 2
+    fi
+    name=`hostname`
+    time=`date '+%Y-%m-%d_%H%M%S'`
+    
+    archive_name=${name}_${time}-x86_64.tar
+    echo $archive_name
+
+    cur_dir=`pwd`
+    pushd $NIO_INSTALL_PREFIX
+    tar -cvf ${cur_dir}/${archive_name} * 
+    popd
+    pushd $PNC_SYSROOT
+    tar -uvf ${cur_dir}/${archive_name} lib
+    popd 
+    gzip  ${cur_dir}/${archive_name}
+}
+
+if [[ $1 == '-h' ]]; then
+    usage
+else
+    make_release
+fi
